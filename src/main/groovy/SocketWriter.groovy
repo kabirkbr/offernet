@@ -46,6 +46,7 @@ public class SocketWriter extends UntypedAbstractActor {
 //    startServer();
   }
 
+/*
   private startServer() {
     server = new ServerSocket(Parameters.parameters.visualizationPort)
     logger.info('Started Socket Server {}', server)
@@ -65,11 +66,13 @@ public class SocketWriter extends UntypedAbstractActor {
     }
 
   }
+*/
 
   private writeSocket(Object event) {
       String visualizationServer = InetAddress.getByName("visualization-server.host").getHostAddress(); 
       logger.info("visualizationServer address is {}",visualizationServer)
       def s = new Socket(visualizationServer, Parameters.parameters.visualizationPort);
+
       s.withStreams { input, output ->
         output << event
         //def buffer = input.newReader().readLine()
@@ -77,6 +80,5 @@ public class SocketWriter extends UntypedAbstractActor {
       }
       logger.info("Wrote JSON string of an event {} to socket.", event);
   }
-
       
 }

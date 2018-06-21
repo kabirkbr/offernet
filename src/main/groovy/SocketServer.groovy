@@ -9,17 +9,26 @@ import akka.actor.UntypedAbstractActor;
 import akka.actor.Props;
 import akka.japi.Creator;
 
-import org.junit.BeforeClass;
+import org.junit.AfterClass;
 
-public class DummySocketServer extends UntypedAbstractActor {
-    ServerSocket server;
+import com.corundumstudio.socketio.listener.*;
+import com.corundumstudio.socketio.*;
+
+public class SocketServer extends UntypedAbstractActor {
+    SocketIOServer server;
     Logger logger;
+    ArrayList clients;
+
+    @AfterClass
+    public void stopServer() {
+      this.server.stop();
+    }
 
 	  public static Props props() {
-      return Props.create(new Creator<DummySocketServer>() {
+      return Props.create(new Creator<SocketServer>() {
 		    @Override
-  		  public DummySocketServer create() throws Exception {
-    		  return new DummySocketServer();
+  		  public SocketServer create() throws Exception {
+    		  return new SocketServer();
   		  }
 	    });
 	  }
@@ -31,7 +40,7 @@ public class DummySocketServer extends UntypedAbstractActor {
           default: 
             def args = message.args
             def reply = this."$message.name"(*args)
-            getSender().tell(reply,getSelf());
+            //getSender().tell(reply,getSelf());
             break;
         }
       } else if (message instanceof String) {
@@ -41,24 +50,35 @@ public class DummySocketServer extends UntypedAbstractActor {
       }
     }
 
-    private DummySocketServer() {
+    private SocketServer() {
         def config = new ConfigSlurper().parse(new File('configs/log4j-properties.groovy').toURL())
         PropertyConfigurator.configure(config.toProperties())
-        logger = LoggerFactory.getLogger('DummySocketServer.class');
+        logger = LoggerFactory.getLogger('SocketServer.class');
+        clients = new ArrayList();
     }
 
-    private startClient() {
-      String visualizationServer = InetAddress.getByName("visualization-server.host").getHostAddress(); 
-      def socket = new Socket(visualizationServer, Parameters.parameters.visualizationPort)
-      logger.info("connected to server from client with socket: {}", socket)
-      BufferedReader bin =new BufferedReader(new InputStreamReader(socket.getInputStream()));        
-      while(true) {
-        def buffer = bin.readLine()
-        //def message = (Map) new JsonSlurper().parseText(buffer);
-        logger.warn("Received buffer {}", buffer)
-      }
+    private startServer() {
+        Configuration config = new Configuration();
+        String visualizationServer = InetAddress.getByName("visualization-server.host").getHostAddress();
+        int visualizationPort = Parameters.parameters.visualizationPort;
+        config.setHostname(visualizationServer);
+        config.setPort(visualizationPort);
+        logger.info('Starting a SocketIOServer on {} port {}',visualizationServer, visualizationPort)
+
+        this.server = new SocketIOServer(config);
+        this.server.start();
+        Thread.sleep(10000);
+        this.server.stop();
     }
 
+    private broadcastEvent(Object event) {
+      this.server.getBroadcastOperations().sendEvent("event", event);
+      logger.info("Sent a broadcast event {} to all connected clients",event);
+    }
+
+
+/*
+** Old implementation of socket server on groovy
     private startServer() {
       server = new ServerSocket(Parameters.parameters.visualizationPort)
       logger.info('Started Socket Server {}', server)
@@ -77,6 +97,7 @@ public class DummySocketServer extends UntypedAbstractActor {
         }
       }
     }
+  */
     
 }
 
