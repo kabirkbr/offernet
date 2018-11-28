@@ -1,0 +1,176 @@
+@charset "UTF-8";
+@font-face {
+font-family: 'latolight';
+src: url(//www.dckap.com/wp-content/themes/dckap/fonts/lato-light.eot);
+src: url(//www.dckap.com/wp-content/themes/dckap/fonts/lato-light.eot?#iefix) format("embedded-opentype"), url(//www.dckap.com/wp-content/themes/dckap/fonts/lato-light.woff2) format("woff2"), url(//www.dckap.com/wp-content/themes/dckap/fonts/lato-light.woff) format("woff"), url(//www.dckap.com/wp-content/themes/dckap/fonts/lato-light.ttf) format("truetype"), url(//www.dckap.com/wp-content/themes/dckap/fonts/lato-light.svg#latolight) format("svg");
+font-weight: normal;
+font-style: normal;
+}
+.brands #brandshow {
+background-color: #f5f5f5;
+border-bottom: 2px solid #e7e7e7;
+border-radius: 50px;
+color: #a7a7a7;
+content: "Show more";
+cursor: pointer;
+display: block;
+font-size: 14px;
+height: 40px;
+line-height: 38px;
+margin: 10px auto;
+max-width: 280px;
+position: relative;
+text-align: center;
+text-transform: uppercase;
+width: 100%;
+} .brands #brandshow:hover {
+background-color: #fafafa;
+padding-top: 2px;
+} .brands #brandshow:hover:before, .brands #brandshow:hover:after {
+margin-top: -1.5px;
+} .brands #brandshow:before, .brands #brandshow:after {
+background-image: url(../images/down-arrow.png);
+background-repeat: no-repeat;
+content: "";
+display: block;
+height: 7px;
+left: 50%;
+margin-left: -80px;
+margin-top: -3.5px;
+position: absolute;
+top: 50%;
+width: 14px;
+} .brands #brandshow:after {
+left: auto;
+margin-left: auto;
+margin-right: -80px;
+right: 50%;
+} .brands #brandshow.shw-less:before, .brands #brandshow.shw-less:after {
+background-image: url(../images/up-arrow.png);
+}
+.cntnt-row {
+clear: both;
+display: inline-block;
+width: 100%;
+} 
+@media only screen and (max-width: 2560px) { 
+.brands .logos-list {
+display: inline-block;
+max-height: 125px;
+overflow: hidden;
+width: 100%;
+} .brands .logos-list li {
+float: left;
+margin: 20px 0;
+padding: 0 10px;
+text-align: center;
+width: 20%;
+} .brands .logos-list.shw-more {
+max-height: inherit;
+}
+}
+@media only screen and (max-width: 2400px) { 
+.brands .logos-list {
+display: inline-block;
+max-height: 75px;
+overflow: hidden;
+width: 100%;
+} .brands .logos-list li {
+float: left;
+margin: 10px 0;
+padding: 0 10px;
+text-align: center;
+width: 20%;
+} .brands .logos-list.shw-more {
+max-height: inherit;
+}
+}
+@media screen and (max-width: 380px) {  .brands .logos-list li {
+width: 100%;
+} .brands .logos-list li:last-child {
+margin: 20px 0;
+width: 280px;
+} 
+}
+
+@media only screen and (max-width: 420px) { .brands .logos-list li { } .ur-project p {
+font-size: 16px;
+line-height: 22px;
+text-align: justify;
+}
+}
+
+@media screen and (max-width: 500px) { .brands .logos-list {
+max-height: 395px;
+} .brands .logos-list li {
+width: 320px;
+} .brands .logos-list li:last-child {
+margin: 20px 0;
+width: 320px;
+}
+}
+@media screen and (max-width: 650px) { .brands .logos-list li {
+width: 220px;
+} .brands .logos-list li:last-child {
+margin: 20px 0;
+width: 220px;
+}
+}
+
+@media only screen and (max-width: 720px) { .brands .logos-list li {
+width: 260px;
+} .brands .logos-list li img {
+width: auto;
+} .brands .logos-list li:last-child {
+margin: 20px 0;
+width: 260px;
+} .brands .logos-list li:last-child img {
+width: auto;
+} 
+}
+
+@media screen and (max-width: 1024px) {  .brands .logos-list {
+margin: 0 auto;
+max-height: 210px;
+text-align: center;
+} .brands .logos-list li {
+display: inline-block;
+float: none;
+margin: 10px 0;
+width: 32%;
+} .landing-sec .inner-sec .sec-cntnt .pop-cntnt .cnt-align h3 {
+font-size: 34px;
+margin-top: 34px;
+}
+}
+@media screen and (max-width: 850px) {  .brands .logos-list {
+margin: 0 auto;
+max-height: 280px;
+} .brands .logos-list li {
+width: 210px;
+} .brands .logos-list li img {
+width: 100%;
+} .brands .logos-list li:last-child {
+margin: 0 auto;
+width: 660px;
+} .brands .logos-list li:last-child img {
+width: auto;
+} 
+}
+@media screen and (max-width: 768px) { .about-sec .og-grid li {
+margin: 10px 3% 35px;
+width: 26%;
+} .brands .logos-list li {
+width: 200px;
+} .brands .logos-list li img {
+width: 100%;
+} .brands .logos-list li:last-child {
+margin: 0 auto;
+width: 620px;
+} .brands .logos-list li:last-child img {
+width: auto;
+}
+}
+ol, ul {
+list-style: none;
+} 
