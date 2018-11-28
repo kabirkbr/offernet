@@ -1,7 +1,9 @@
-log4j.rootLogger = "DEBUG, DB"
+log4j.rootLogger = "INFO, SIM"
 
-log4j.appender.SIM = "org.apache.log4j.FileAppender"
+log4j.appender.SIM = "org.apache.log4j.RollingFileAppender"
 log4j.appender."SIM.File" = './logs/OfferNet.log'
+log4j.appender."SIM.MaxFileSize"="1GB"
+log4j.appender."SIM.MaxBackupIndex"=10
 log4j.appender."SIM.Append"=true
 log4j.appender."SIM.layout"="org.apache.log4j.PatternLayout"
 log4j.appender."SIM.layout.ConversionPattern"= '%d{ISO8601} [%t] %-5p %c %x : %m%n'
