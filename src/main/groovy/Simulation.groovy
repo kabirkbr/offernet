@@ -119,7 +119,7 @@ class Simulation extends AbstractActorWithTimers {
 
   private ActorRef createAgentWithTickers(List tickers) {
     ArrayList existingVertexIds = vertexIdToActorRefTable.keySet().toArray();
-    logger.debug("existingVertexIds array is of size {}: {}", existingVertexIds.size(), existingVertexIds)
+    logger.debug("existingVertexIds array is of size {}", existingVertexIds.size())
     def randomVertexId;
     if (existingVertexIds.size() > 1) {
       def random = new Random();

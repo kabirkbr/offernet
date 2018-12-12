@@ -85,6 +85,7 @@ public class OfferNet implements AutoCloseable {
               .setMaxConnectionsPerHost( HostDistance.REMOTE, 4);
 
             poolingOptions
+              //.setMaxRequestsPerConnection(HostDistance.LOCAL, 2000) // for stressTesting purposes -- to see what is wrong
               .setMaxRequestsPerConnection(HostDistance.LOCAL, 32768)
               .setMaxRequestsPerConnection(HostDistance.REMOTE, 2000);
 
@@ -475,7 +476,7 @@ public class OfferNet implements AutoCloseable {
       logger.debug("Executed statement: {}",Utils.getStatement(rs,params));
       logger.debug("With parameters: {}", params);
       def result = rs.all()
-      logger.debug("Received result {}",result)
+      //logger.debug("Received result {}",result)
 
       logger.info('method={} : simulationId={} : version={} ; similarityThreshold={} ; cutoffValue={} ; paths_count={} : wallTime_ms={} msec.', 
         'allPathsCentralized.v1', 

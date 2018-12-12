@@ -313,11 +313,11 @@ public class Experiments {
 
 		
 		// events per agent per day rates:
-		def randomPairsRatePerAgentPerDay = 0.15 * 10
-		def chainCreationRatePerAgentPerDay = 0.014 *10
-		def randomCycleSearchRatePerAgentPerDay = 0.3 *10
-		def targetedCycleSearchRatePerAgentPerDay = 0.012 *10  
-		def searchAndConnectRatePerAgentPerDay = 0.1 *10
+		def randomPairsRatePerAgentPerDay = 0.15 * 1
+		def chainCreationRatePerAgentPerDay = 0.014 * 1
+		def randomCycleSearchRatePerAgentPerDay = 0.3 *1
+		def targetedCycleSearchRatePerAgentPerDay = 0.012 *1
+		def searchAndConnectRatePerAgentPerDay = 0.1 *10000
 		
 		def millisBetweenRandomPairsPerAgent = 1 / (randomPairsRatePerAgentPerDay / 24 / 60 / 60 / 1000 )
 		def millisBetweenChainCreationPerAgent = 1 / (chainCreationRatePerAgentPerDay / 24 / 60 / 60 / 1000 )
@@ -359,7 +359,7 @@ public class Experiments {
 
 		logger.info('method={} : message={} : experimentId={} : simulationId={} : parameters={}',
 			"stressTesting",
-			"after storing agentId and vertexId in Agent.class as parameters; may solve the timeout of getVertexId();",
+			"trying out different loads of queries",
 			experimentId,
 			simulationId,
  	    	parametersAll	

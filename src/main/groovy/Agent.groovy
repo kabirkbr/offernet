@@ -670,7 +670,7 @@ public class Agent extends AbstractActorWithTimers {
       logger.debug("Executed statement: {}",Utils.getStatement(rs,params));
       logger.debug("With parameters: {}", params);
       def result = rs.all()
-      logger.debug("Received result {}",result)
+      //logger.debug("Received result {}",result)
 
       logger.info('method={} : simulationId={} : agentId={} ; work={} ; cutoffValue={} ; similarityConstraint={} ; paths_count={} : wallTime_ms={} msec.', 
         'pathSearch', 
@@ -692,7 +692,7 @@ public class Agent extends AbstractActorWithTimers {
           List<GraphNode> workCycles = this.cycleSearch(work, similarityConstraint);
           agentCycles.addAll(workCycles)
       }
-      logger.debug('agent {} found {} cycles', this.id(), agentCycles)
+      logger.debug('agent {} found {} cycles', this.id(), agentCycles.size())
       return agentCycles
   }
 
@@ -719,21 +719,21 @@ public class Agent extends AbstractActorWithTimers {
 
   private List<GraphNode> cycleSearch(Object similarityConstraint, List chain) {
       def agentCycles = cycleSearch(similarityConstraint);
-      logger.debug('agent {} found {} paths or cycles: checking for chain', this.id(), agentCycles)
+      logger.debug('agent {} found {} paths or cycles: checking for chain', this.id(), agentCycles.size())
       def reply = new Method("checkFoundPaths", new ArrayList(){{add(agentCycles);add(chain)}})
       getContext().actorSelection("/user/Analyst").tell(reply,getSelf())
   }
 
   private List<GraphNode> cycleSearch(Object similarityConstraint, Integer maxReachDistance, List chain) {
       def agentCycles = cycleSearch(similarityConstraint,maxReachDistance);
-      logger.debug('agent {} found {} paths or cycles: checking for chain', this.id(), agentCycles)
+      logger.debug('agent {} found {} paths or cycles: checking for chain', this.id(), agentCycles.size())
       def reply = new Method("checkFoundPaths", new ArrayList(){{add(agentCycles);add(chain)}})
       getContext().actorSelection("/user/Analyst").tell(reply,getSelf())
   }
 
   private List<GraphNode> cycleSearchRandom(Object similarityConstraint, Integer maxReachDistance) {
       def agentCycles = cycleSearch(similarityConstraint,maxReachDistance);
-      logger.debug('agent {} found {} paths or cycles', this.id(), agentCycles);
+      logger.debug('agent {} found {} paths or cycles', this.id(), agentCycles.size());
   }
 
   private List<GraphNode> cycleSearch(Vertex work, Object similarityConstraint) {
@@ -759,7 +759,7 @@ public class Agent extends AbstractActorWithTimers {
       logger.debug("With parameters: {}", params);
       def result = rs.all()
       logger.debug("Graph results are exhausted {}", rs.isExhausted())
-      logger.debug("Received result {}",result)
+      //logger.debug("Received result {}",result)
 
       logger.info('method={} : simulationId={} : agentId={} ; work={} ; similarityConstraint={} ; cycles_count={} : wallTime_ms={} msec.', 
         'cycleSearch', 
@@ -803,7 +803,7 @@ public class Agent extends AbstractActorWithTimers {
       logger.debug("With parameters: {}", params);
       def result = rs.all()
       logger.debug("Graph results are exhausted {}", rs.isExhausted())
-      logger.debug("Received result {}",result)
+      //logger.debug("Received result {}",result)
 
       logger.info('method={} : simulationId={} : agentId={} ; work={} ; similarityConstraint={} : maxReachDistance={} : cycles_count={} : wallTime_ms={} msec.', 
         'cycleSearch', 
