@@ -1,0 +1,250 @@
+---
+title: "Offer Networks -- stressTesting 20181202"
+output:
+  html_document:
+    df_print: paged
+always_allow_html: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r methods, results = 'asis', eval=TRUE}
+
+simulationIds <- c(
+"SIM11-21-01-24-HcHRNr--ST",
+"SIM11-21-03-03-udbAEI--ST",
+"SIM11-21-07-45-6DijXy--ST",
+"SIM11-21-07-45-6DijXy--ST",
+"SIM11-28-01-59-abemTR--ST",
+"SIM11-28-03-36-yHwSVk--ST",
+"SIM12-01-10-54-GdAmIh--ST",
+"SIM12-01-12-30-58jcmS--ST",
+"SIM12-01-04-41-uG27KI--ST",
+"SIM12-01-06-41-XMErCh--ST",
+"SIM12-02-02-59-qoTEH8--ST",
+"SIM12-03-11-03-wmWZe8--ST",
+"SIM12-04-03-45-tSkFD6--ST",
+"SIM12-05-12-30-zZnv4I--ST",
+"SIM12-05-06-06-L8bf4p--ST",
+"SIM12-05-08-16-yn6Pbx--ST",
+"SIM12-06-12-46-j72yN2--ST",
+"SIM12-06-02-50-GbMwxn--ST",
+"SIM12-06-08-50-EA8gRc--ST",
+"SIM12-07-12-55-EEnAYt--ST"
+)
+
+
+simulationIds <- c(
+"SIM11-21-01-24-HcHRNr--ST",
+"SIM12-07-12-55-EEnAYt--ST"
+)
+
+library(elastic)
+library(jsonlite)
+library(knitr)
+library(kableExtra)
+library(plyr)
+library(stringi)
+library(ggplot2)
+
+for (simulationId in simulationIds) {
+  cat(paste("# Simulation : ", simulationId,'\n\n'))
+  cat(paste("## Parameters \n\n"))
+  conn <-elastic::connect(es_port = 9200)
+  template <- '
+        {
+          "query": {
+            "bool": {
+              "must": [
+                { "match_phrase": {
+                  "simulationId": "%s"
+                  }
+                },
+                { "exists": { "field": "parameters" } }
+              ]
+            }
+          }
+        }      
+  '
+  
+  query <- sprintf(template, simulationId)
+  source = c(
+    	'similarityConnectThreshold',
+			'initialAgentNumber',
+			'newAgentsPerSecond',
+			'chainLenghts',
+			'maxSimilaritySearchDistance',
+			'maxCycleSearchDistance',
+			'similaritySearchThreshold',
+			'intialGraphType',
+			'timeoutStressTesting',
+			'randomPairsRatePerAgentPerDay',
+			'chainCreationRatePerAgentPerDay',
+			'randomCycleSearchRatePerAgentPerDay',
+			'targetedCycleSearchRatePerAgentPerDay',
+			'searchAndConnectRatePerAgentPerDay',
+			'millisBetweenRandomPairsPerAgent',
+			'millisBetweenChainCreationPerAgent',
+			'millisBetweenRandomCycleSearchPerAgent',
+			'millisBetweenTargetedCycleSearchPerAgent',
+			'millisBetweenSearchAndConnectPerAgent'
+  )
+  result <- Search(index="filebeat-*", source=source, body=query, asdf=TRUE, size=10000)$hits$hits
+  parameters.df <- result[,-c(1:4)]
+  vars=sapply(strsplit(colnames(parameters.df), split='.', fixed=TRUE), function(x) (x[2]))
+  colnames(parameters.df) <- vars
+  data<- as.data.frame(t(parameters.df))
+  colnames(data) <- c('value of parameter')
+  # output parameters
+  print(kable(data) %>%
+    kable_styling(bootstrap_options='condensed',full_width = FALSE, position = 'left') %>%
+      column_spec(1:1,width="20em")
+      #column_spec(2:ncol(parameters.df),width="15em")
+      #add_header_above(c("variables"))
+  )  
+      
+  conn <-elastic::connect(es_port = 9200)
+  template <- '
+        {
+          "_source": false, 
+          "query": {
+            "match_phrase": { "simulationId" : "%s" }},
+          "aggs": {
+            "group_by_method": {
+              "terms": {
+                "field": "method.keyword"
+              },
+              "aggs": {
+                "group_by_method": {
+                  "terms": {
+                    "field": "method.keyword",
+                    "order": {
+                      "avg_wallTime_ms": "desc"
+                    }
+                  },
+                  "aggs": {
+                    "sum_wallTime_ms": {
+                      "sum": {
+                        "field": "wallTime_ms"
+                      }
+                    },
+                    "avg_wallTime_ms": {
+                      "avg": {
+                        "field": "wallTime_ms"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }      
+  '
+
+  query <- sprintf(template, simulationId)
+  sim.result <- Search(index="filebeat-*", body=query, asdf=TRUE, size=10000)
+  sim.df <- sim.result$aggregations$group_by_method$buckets$group_by_method.buckets
+  methods.df <- ldply(sim.df, data.frame)
+  cat(paste("## Method calls per simulation \n\n"))
+  #colnames(methods.df) <- c('number of calls')
+  print(kable(methods.df) %>%
+    kable_styling(bootstrap_options='condensed',full_width = FALSE, position = 'left') %>%
+      column_spec(1:1,width="20em")
+      #column_spec(2:ncol(parameters.df),width="15em")
+      #add_header_above(c("variables"))
+  ) 
+  
+  cat(paste("## Method calls and running times \n\n"))
+
+  methodNames <- methods.df$key
+  methodNames <- methodNames[ methodNames != "stressTesting" ]
+  for (method in methodNames) {
+      cat(paste("### Method ", method , "\n\n"))
+      conn <-elastic::connect(es_port = 9200)
+      template <- '{
+            "_source": false, 
+            "query": {
+              "bool": {
+                "must": [
+                  { "match_phrase": {
+                    "simulationId": "%s"
+                    }
+                  },
+                  { "match_phrase": {
+                    "method.keyword": "%s"
+                  }}
+                ]
+              }
+            },
+            "aggs": {
+              "methods_by_date": {
+                "date_histogram": {
+                  "field": "timestamp",
+                  "interval": "1m"
+                },
+               "aggs": {
+                "average_wallTime_ms": {
+                  "avg": {
+                    "field": "wallTime_ms"
+                  }
+                },
+                "max_wallTime_ms": {
+                  "max": {
+                    "field": "wallTime_ms"
+                  }
+                },
+                "min_wallTime_ms": {
+                  "min": {
+                    "field": "wallTime_ms"
+                  }
+                }
+                
+              }
+            }
+          }
+        }      
+      '
+      
+      query <- sprintf(template, simulationId, method)
+      result <- Search(index="filebeat-*", body=query, asdf=TRUE, size=10000)
+      method.agg <- result$aggregations$methods_by_date$buckets
+      #method.agg <- method.agg[order(key_as_string),]
+      #method.agg$index <- as.numeric(row.names(method.agg))
+      # draw a nice graph here
+      size = 1
+      mp <- ggplot(method.agg, aes(x=key_as_string))
+        mp <- mp + geom_line(aes(y=doc_count, group = 1),size = size, color="blue")
+        mp <- mp + labs(y = "Number of method calls per minute",
+                x = "Minutes into simulation",
+                colour = "Parameter")
+        mp <- mp + theme(legend.position = 'top')
+      print(mp)
+      
+      mp <- ggplot(method.agg, aes(x=key_as_string))
+       #       mp <- mp + geom_ribbon(aes(ymin = min_wallTime_ms.value, ymax = max_wallTime_ms.value), fill = "gray")
+        mp <- mp + geom_line(aes(y=average_wallTime_ms.value,  group = 1), size=size, color = "red")
+        mp <- mp + labs(y = "Running time in milliseconds",
+                x = "Minutes into simulation",
+                colour = "Parameter")
+        mp <- mp + theme(legend.position = 'top')
+      print(mp)
+    
+      cat('\n\n')
+  }
+  
+
+  m <- kable(methods.df,format.args = list(decimal.mark = '.', big.mark = ",")) %>%
+    kable_styling(bootstrap_options='condensed',full_width = FALSE, position = 'left')
+    #row_spec(last_row, bold = TRUE)
+      #column_spec(0:ncol(experiment.df),width="10em") 
+      #add_header_above(c("labels"=5))
+  print(m)
+  cat('\n\n')
+
+
+}
+
+```
