@@ -1,5 +1,5 @@
 ---
-title: "Offer Networks -- status update 2018/10"
+title: "Offer Networks -- status update 2018/10-2"
 output:
   html_document:
     df_print: paged
@@ -52,7 +52,7 @@ Decentralized computing model and architecture allows to implement, test, deploy
 
 #### OfferNets domain model and processes implementation
 
-OfferNets domain model is specified as a property graph schema in terms of types of nodes, their properties, types of edges, their properties and processes defining graph traversal and mutation constraints (see documentation [page](https://singnet.github.io/offernet/public/discussions/decentralized-computing-in-offernets.html#data-structure)). Beyond that every agent operating in the network is allowed to implement any process. Processes that require interaction with the social graph of OfferNets are implemented as graph traversals, other processes -- as regular asyncrhonous algorithms. In the current version OfferNets implements basic similarity search and cycle search processes with cycle execution and advanced search processes in the pipeline (see documentation [page](https://singnet.github.io/offernet/public/discussions/decentralized-computing-in-offernets.html#processes)).
+OfferNets domain model is specified as a property graph schema in terms of types of nodes, their properties, types of edges, their properties and processes defining graph traversal and mutation constraints (see documentation [page](https://singnet.github.io/offernet/public/discussion-corrected/decentralized-computing-in-offernets.html#data-structure)). Beyond that every agent operating in the network is allowed to implement any process. Processes that require interaction with the social graph of OfferNets are implemented as graph traversals, other processes -- as regular asyncrhonous algorithms. In the current version OfferNets implements basic similarity search and cycle search processes with cycle execution and advanced search processes in the pipeline (see documentation [page](https://singnet.github.io/offernet/public/discussion-corrected/decentralized-computing-in-offernets.html#processes)).
 
 #### Simulation modelling
 

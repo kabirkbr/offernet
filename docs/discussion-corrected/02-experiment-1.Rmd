@@ -413,7 +413,7 @@ ggplot(data = averages, aes(x=maxDistance, y=graphType, fill=success)) +
 
 As provided by the results of experiments with parameters described in table \@ref(fig:all-simulation-parameters), decentralized search is marginally faster when there is relatively small number of links in the graph, yet its time complexity quickly increases with the number of `similarity` edges (see figure \@ref(fig:simulation-time-vs-similarity-edges). Dependency is plotted separately for graph with different `agentNumber` parameters, since number of vertices and number of edges in the graph are not independent variables -- `agentNumber` is the parameter of simulation, but number of edges is an emergent variable. We use the number of `similarity` edges rather than total number of edges in the graph only for the reason that the number of `similarity` edges exceeds numbers of other types of edges by a few orders of magnitude and renders them 'unimportant'.
 
-```{r simulation-time-vs-similarity-edges, fig.cap='Dependence of simulation time on `similarity` edges in the graph as modulated by `similarityConnectThreshold` parameter for different agent numbers. Note, that centralized search is somewhat faster than decentralized which has to be investigated further.', echo=FALSE, results='asis', fig.width=8, fig.height=12}
+```{r simulation-time-vs-similarity-edges, fig.cap='Dependence of simulation time on `similarity` edges in the graph as modulated by `similarityConnectThreshold` parameter for different agent numbers. Note, that centralized search is somewhat faster than decentralized which has to be investigated further.', echo=FALSE, results='asis', fig.width=8, fig.height=9}
 
 LoadToEnvironment <- function(RData, env = new.env()){
   load(RData, env)
@@ -452,37 +452,45 @@ all.df <- rbind(all.df, exp18.env$summary.df)
 all.df$simulationType_agentNumber <- paste(all.df$simulationType,'-',all.df$agentNumber)
 
 agentNumbers = sort(unique(all.df$agentNumber))
+takeOut <- c('500','600','700')
+# experiments with these agentNumbers have much less simulations thereore not comparable with others;
+agentNumbers <- setdiff(agentNumbers,takeOut)
 i = 1
 index <- c('(a)','(b)','(c)','(d)','(e)','(f)','(g)','(h)')
 gg <- list()
 for (agentNumber in agentNumbers) {
   e.df <- all.df[which(all.df$agentNumber == agentNumber),]
   gg[[i]] <- ggplot(e.df, aes(x=edges_similarity, y=sum_wallTime_min_total, color=simulationType)) + 
-      geom_point(aes(size=foundCycles)) + 
-      geom_smooth(method="loess", se=F) + 
-      scale_x_continuous(labels=fancy_scientific) +
-      #xlim(c(0, 0.1)) + 
-      #ylim(c(0, 500000)) + 
-      labs(title = paste(index[i],' agentNumber = ',agentNumber)) +
-      theme(axis.title.x=element_blank(),
-            axis.title.y=element_blank(),
-            plot.title = element_text(size=11),
-            axis.text.x = element_text(hjust = 1)
-      )
+    geom_point(aes(size=foundCycles)) + 
+    geom_smooth(method="loess", se=F) + 
+    scale_x_continuous(labels=fancy_scientific) +
+    #xlim(c(0, 0.1)) + 
+    #ylim(c(0, 500000)) + 
+    labs(title = paste(index[i],' agentNumber = ',agentNumber)) +
+    theme(axis.title.x=element_blank(),
+          axis.title.y=element_blank(),
+          plot.title = element_text(size=11),
+          axis.text.x = element_text(hjust = 1)
+    )
   i<-i+1
 }
 #install.packages('ggpubr')
 library(ggpubr)
-figure <- ggarrange(gg[[1]],gg[[2]],
-             gg[[3]],gg[[4]],
-             gg[[5]],gg[[6]],
-             gg[[7]],gg[[8]],
-             nrow=4,
-             ncol=2,
-             common.legend=TRUE,
-             legend='bottom')
+figure <- ggarrange(
+            ggarrange(gg[[1]],gg[[2]],
+                      gg[[3]],gg[[4]],
+                      nrow=2,
+                      ncol=2,
+                      legend="none"),
+            gg[[5]],
+            nrow=2,
+            heights = c(2, 1),
+            ncol=1,
+            common.legend=TRUE,
+            legend='bottom')
 
 annotate_figure(figure, bottom = text_grob("y-axis: simulationTime in minutes; x-axis: number of similarity edges in the graph;", size = 10))
+
 ```
 
 ### Centralized search time increases by the number of vertices
@@ -528,23 +536,60 @@ all.df <- rbind(all.df, exp18.env$summary.df)
 # filtering out experiment which was run on random graphs in order to make results more consistent
 #all.df <- all.df[which(all.df$experimentId != "EXP08-10-01-33-JYSw5Z" & all.df$experimentId != "EXP08-11-12-58-3BvMSL"), ]
 all.df$simulationType_agentNumber <- paste(all.df$simulationType,'-',all.df$agentNumber)
-all.df <- all.df[which(all.df$simulationType != "Decentralized"), ]
 all.df <- all.df[which(all.df$randomWorksNumberMultiplier == 1), ]
 #all.df <- all.df[which(all.df$similarityConnectThreshold == 0.99), ]
+takeOut <- c('500','600','700')
+# experiments with these agentNumbers have much less simulations thereore not comparable with others;
+all.df <- all.df[which(!(all.df$agentNumber %in% takeOut)), ]
 
-summ.df <- ddply(all.df,~agentNumber+similarityConnectThreshold,summarise,avg_vertices_total=mean(vertices_total),avg_sum_wallTime_min_total=mean(sum_wallTime_min_total))
+decentralized.df <- all.df[which(all.df$simulationType != "Centralized"), ]
+centralized.df <- all.df[which(all.df$simulationType != "Decentralized"), ]
+summ_dec.df <- ddply(decentralized.df,~agentNumber+similarityConnectThreshold,summarise,avg_vertices_total=mean(vertices_total),avg_sum_wallTime_min_total=mean(sum_wallTime_min_total))
+summ_centr.df <- ddply(centralized.df,~agentNumber+similarityConnectThreshold,summarise,avg_vertices_total=mean(vertices_total),avg_sum_wallTime_min_total=mean(sum_wallTime_min_total))
 
-ggplot(summ.df, aes(x=avg_vertices_total, y=avg_sum_wallTime_min_total, color=similarityConnectThreshold)) + 
+dec <- ggplot(summ_dec.df, aes(x=avg_vertices_total, y=avg_sum_wallTime_min_total, color=similarityConnectThreshold)) + 
   geom_point( ) + 
   geom_smooth(method="loess", se=F) + 
   scale_x_continuous(labels=fancy_scientific) +
-  geom_text(aes(label=paste(agentNumber,'\nagents')), size=4) +
+  #geom_text(aes(label=paste(agentNumber,'\nagents')), size=4) +
   #xlim(c(0, 0.1)) + 
   #ylim(c(0, 500000)) + 
-  labs(y = 'simulationTime, minutes',
+  labs(title = 'Decentralized',
+      y = 'simulationTime, minutes',
        x = 'number of vertices in the graph') +
   guides(size=FALSE)
 
+centr <- ggplot(summ_centr.df, aes(x=avg_vertices_total, y=avg_sum_wallTime_min_total, color=similarityConnectThreshold)) + 
+  geom_point( ) + 
+  geom_smooth(method="loess", se=F) + 
+  scale_x_continuous(labels=fancy_scientific) +
+  #geom_text(aes(label=paste(agentNumber,'\nagents')), size=4) +
+  #xlim(c(0, 0.1)) + 
+  #ylim(c(0, 500000)) + 
+  labs(title='Centralized',
+    y = 'simulationTime, minutes',
+       x = 'number of vertices in the graph') +
+  guides(size=FALSE)
+
+library(ggpubr)
+figure <- ggarrange(centr,dec,
+            common.legend=TRUE,
+            legend='bottom')
+figure
+#annotate_figure(figure, bottom = text_grob("y-axis: simulationTime in minutes; x-axis: number of similarity edges in the graph;", size = 10))
+summ.df <- ddply(all.df,~agentNumber+similarityConnectThreshold,summarise,avg_vertices_total=mean(vertices_total),avg_sum_wallTime_min_total=mean(sum_wallTime_min_total),avg_edges_total=mean(edges_total))
+topology <- ggplot(summ.df, aes(x=avg_vertices_total, y=avg_edges_total, color=similarityConnectThreshold)) + 
+  geom_point( ) + 
+  geom_smooth(method="loess", se=F) + 
+  scale_x_continuous(labels=fancy_scientific) +
+  #geom_text(aes(label=paste(agentNumber,'\nagents')), size=4) +
+  #xlim(c(0, 0.1)) + 
+  #ylim(c(0, 500000)) + 
+  labs(y = 'number of edges',
+       x = 'number of vertices') +
+  guides(size=FALSE) +
+  theme(legend.position="bottom")
+plot(topology)
 ```
 
 
