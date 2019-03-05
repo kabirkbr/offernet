@@ -36,11 +36,20 @@ public class Agent extends AbstractActorWithTimers {
     private String agentId;
     private Object vertexId;
 
-  static Props props(DseSession session, String agentId) {
+  static Props props(DseSession session, Object agentId) {
     return Props.create(new Creator<Agent>() {
       @Override
       public Agent create() throws Exception {
         return new Agent(session,agentId);
+      }
+    });
+  }
+
+  static Props props(DseSession session, Object agentId, Object vertexId) {
+    return Props.create(new Creator<Agent>() {
+      @Override
+      public Agent create() throws Exception {
+        return new Agent(session,agentId,vertexId);
       }
     });
   }
@@ -73,7 +82,7 @@ public class Agent extends AbstractActorWithTimers {
   * @author kabir@singularitynet.io
   */
 
-	public Agent(DseSession session, String agentId) {
+	public Agent(DseSession session, Object agentId) {
 
         def start = System.currentTimeMillis();
         def config = new ConfigSlurper().parse(new File('configs/log4j-properties.groovy').toURL())
@@ -108,6 +117,11 @@ public class Agent extends AbstractActorWithTimers {
           agentId,
           (System.currentTimeMillis()-start))
 	}
+
+  public Agent(DseSession session, Object agentId, Object vertexId) {
+        this(session,agentId);
+        knowsAgent(vertexId);
+  }
 
   private createPeriodicTimer(String methodName, List params, Object periodInMillis) {
       this."$methodName"(*params)
@@ -149,6 +163,11 @@ public class Agent extends AbstractActorWithTimers {
   */
   private Object vertexId() {
     return vertexId;
+  }
+
+  private ActorRef inviteNewAgent() {
+    def agentId = Utils.generateAgentId(); 
+    ActorRef newActor = getContext().actorOf(this.props(this.session,agentId,vertexId),agentId);
   }
 
   /*

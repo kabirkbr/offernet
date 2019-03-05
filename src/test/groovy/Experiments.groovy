@@ -309,7 +309,7 @@ public class Experiments {
 		def randomCycleSearchRate = 7
 		def targetedCycleSearchRate = 0.2
 		*/
-		def timeoutStressTesting = 3600000 * 2// 604800000 // this is 7 days in milliseconds
+		def timeoutStressTesting = 3600000 // 604800000 // this is 7 days in milliseconds
 
 		
 		// events per agent per day rates:
@@ -365,13 +365,6 @@ public class Experiments {
  	    	parametersAll	
 	  	)	
 
-		// create initial agentNetwork
-		String fileName = "graphs/data/smallWorld"+initialAgentNumber+".dat"
-	    Timeout timeout = new Timeout(Duration.create(60, "seconds"));
-    	def msg = new Method("createAgentNetworkFromNetworkXDataFile",[fileName])
-    	Future<Object> future = Patterns.ask(simRef, msg, timeout);
-    	Await.result(future, timeout.duration());
-
     	// start periodic ticker for agent creation 
 
 		String methodName = "createAgentWithTickers"
@@ -383,10 +376,15 @@ public class Experiments {
 		// each agent initiates cycle search per some time
 		tickers.add(['cycleSearchRandom',[similaritySearchThreshold,maxCycleSearchDistance],millisBetweenRandomCycleSearchPerAgent])
 		// start periodic ticker for random cycle searches
+		tickers.add(['inviteNewAgent',[], (newAgentsPerSecond/100) * 1000 ])
+		// start periodic ticker for adding agents
 
-		def arguments = [methodName, [tickers], (1/newAgentsPerSecond) * 1000] 
-		msg = new Method("createPeriodicTimer",arguments)
-    	simRef.tell(msg,ActorRef.noSender())
+		// create initial agentNetwork
+		String fileName = "graphs/data/smallWorld"+initialAgentNumber+".dat"
+	    Timeout timeout = new Timeout(Duration.create(100, "seconds"));
+    	def msg = new Method("createAgentNetworkFromNetworkXDataFileWithTickers",[fileName,tickers])
+    	Future<Object> future = Patterns.ask(simRef, msg, timeout);
+    	Await.result(future, timeout.duration());
 
     	// start periodic ticker for chain creation
 		methodName = "addChainToNetworkWithTaskAgent"

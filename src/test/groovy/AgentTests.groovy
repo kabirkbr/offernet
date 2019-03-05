@@ -29,6 +29,15 @@ import akka.actor.ActorRef;
 import akka.testkit.TestActorRef
 import akka.testkit.JavaTestKit;
 
+import com.datastax.driver.dse.graph.Edge;
+import com.datastax.driver.dse.graph.Vertex;
+
+import akka.pattern.Patterns;
+import scala.concurrent.Future;
+import scala.concurrent.Await;
+import scala.concurrent.duration.Duration;
+import akka.util.Timeout;
+
 import java.util.UUID;
 
 public class AgentTests {
@@ -45,7 +54,9 @@ public class AgentTests {
 
 	@Test
 	void idStaticTest() {
-		def agent1 = TestActorRef.create(system, Agent.props(on.session, UUID.randomUUID().toString())).underlyingActor();
+		def simRef = TestActorRef.create(system, Simulation.props(),'SimulationActor')
+		def agentId = Utils.generateAgentId();
+		def agent1 = TestActorRef.create(system, Agent.props(on.session, agentId)).underlyingActor();
 		assertNotNull(agent1.id())
 		logger.debug("id of the actor via static interface is {}",agent1.id())
 	}
@@ -383,6 +394,31 @@ public class AgentTests {
 		assertNotNull(works)
 		assert works.size() != 0
 		agentTestRef.stop()
+	}
+
+	@Test
+	void createAgentWithNeighbour() {
+		on.flushVertices("agent");
+		String agent1Id = UUID.randomUUID().toString()+"agent1";
+		def agent1 = TestActorRef.create(system, Agent.props(on.session, agent1Id)).underlyingActor();
+		def vertexId1 = agent1.vertexId();
+		ActorRef actor2 = agent1.inviteNewAgent();
+		Timeout timeout = new Timeout(Duration.create(50, "seconds"));
+   		def msg = new Method("vertexId",[])
+    	Future<Object> future = Patterns.ask(actor2, msg, timeout);
+    	def vertexId2 = Await.result(future, timeout.duration());
+    	assertNotNull(vertexId2)
+
+    	def edges = on.getEdges("agent","knows")
+    	assert edges.size() == 1
+
+    	Edge edge = edges[0]
+    	logger.info("Retrieved edge {}",edge)
+    	logger.info("{}: {}",edge.getInV(),vertexId2)
+    	logger.info("{}: {}",edge.getOutV(),vertexId1)
+
+    	assertEquals(edge.getInV(),vertexId1)
+    	assertEquals(edge.getOutV(),vertexId2)
 	}
 
 }

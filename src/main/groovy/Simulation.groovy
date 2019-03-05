@@ -141,7 +141,7 @@ class Simulation extends AbstractActorWithTimers {
   }
 
   private ActorRef createAgent() {
-    String agentId = UUID.randomUUID().toString();
+    def agentId = Utils.generateAgentId();
     def actorRef = createAgentWithId(agentId);
     return actorRef
   }
@@ -301,6 +301,47 @@ class Simulation extends AbstractActorWithTimers {
             agentsList.add(agent2)      
         		edges +=1
         	}
+        }
+        logger.debug("Created {} edges in the network",edges)
+        return true
+    }
+
+    private boolean createAgentNetworkFromNetworkXDataFileWithTickers(String fileName, List tickers) throws Throwable {
+        FileInputStream inStream = new FileInputStream(fileName);
+        Scanner scanner = new Scanner(inStream);
+        int numberOfAgents = scanner.nextInt();
+        int numberOfEdges = scanner.nextInt();
+        ArrayList<Integer>[] adj = (ArrayList<Integer>[])new ArrayList[numberOfAgents];
+        for (int i = 0; i < numberOfAgents; i++) {
+            adj[i] = new ArrayList<Integer>();
+        }
+        for (int i = 0; i < numberOfEdges; i++) {
+            int x, y;
+            x = scanner.nextInt();
+            logger.debug("Agent {}",x)
+            y = scanner.nextInt();
+            logger.debug("knows agent {}",y)
+            adj[x - 1].add(y - 1);
+            adj[y - 1].add(x - 1);
+        }
+        logger.debug("Imported adjacency list: {}",adj)
+
+        def agentsList = [];
+        numberOfAgents.times {
+          agentsList.add( this.createAgentWithTickers(tickers) );
+        }
+        logger.debug("Created {} agents list: {}", agentsList.size(), agentsList)
+
+        def edges = 0;
+        for (int i = 0; i<adj.size(); i++) {
+          def agent1 = agentsList[i]
+          adj[i].each { i2 ->
+            def agent2 = agentsList[i2]
+            def agent2vertexId = this.getAgentVertexId(agent2)
+            agent1.tell(new Method("knowsAgent",[agent2vertexId]),getSelf())
+            agentsList.add(agent2)      
+            edges +=1
+          }
         }
         logger.debug("Created {} edges in the network",edges)
         return true

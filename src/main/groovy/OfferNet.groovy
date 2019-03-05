@@ -106,12 +106,12 @@ public class OfferNet implements AutoCloseable {
                 schema.propertyKey("similarity").Double().single().ifNotExists().create();
                 schema.propertyKey("type").Text().single().ifNotExists().create();
               """
-
+              
               SimpleGraphStatement createPropertyKeys = new SimpleGraphStatement(propertyKeys);
               session.executeGraph(createPropertyKeys)
 
               String vertexLabels = """
-                schema.vertexLabel("agent").properties("agentId").ifNotExists().create();
+                schema.vertexLabel("agent").properties("agentId").ifNotExists().create()
                 schema.vertexLabel("work").properties("workId").ifNotExists().create();
                 schema.vertexLabel("item").properties("itemId").ifNotExists().create();
                 schema.vertexLabel("item").properties("value").ifNotExists().create();

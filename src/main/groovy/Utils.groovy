@@ -419,4 +419,9 @@ public class Utils {
     public static Map getAllShortestPaths(GraphTraversalSource g, List vertexTypes, List edgeLabels) {
       return g.V().has('type',within(vertexTypes))
     }
+
+    public static Object generateAgentId() {
+      String agentId = UUID.randomUUID().toString();
+      return agentId;
+    }
 }

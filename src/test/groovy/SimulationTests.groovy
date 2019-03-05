@@ -104,6 +104,8 @@ public class SimulationTests {
 
 			def agentNumber = sim.on.getVertices('agent').size();
 			assert agentNumber == 4
+			simRef.tell(akka.actor.PoisonPill.getInstance(), ActorRef.noSender());
+			Thread.sleep(100)
 		}
 
 		@Test
@@ -132,7 +134,7 @@ public class SimulationTests {
 		   	def jsonSlurper = new JsonSlurper();
 		   	def allEdgesByLabel = jsonSlurper.parseText(allEdgesByLabelString)
 		   	assert allEdgesByLabel.get("knows") == 9
-		   	assert allEdgesByLabel.size() == 1
+		   	assert allEdgesByLabel.size() > 3
 
 			tickers = []
 			// each agent creates some random work per some time
@@ -156,6 +158,9 @@ public class SimulationTests {
 		   	assert allEdgesByLabel.get("owns") > 0
 		   	assert allEdgesByLabel.get("demands") > 0
 		   	assert allEdgesByLabel.get("offers") > 0
+
+		   	simRef.tell(akka.actor.PoisonPill.getInstance(), ActorRef.noSender());
+  			Thread.sleep(100)
 		}
 
 		@Test
